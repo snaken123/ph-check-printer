@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Philippine Check Printer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: #1a3a6b;
+      margin-bottom: 20px;
+    }
+    h1 span { color: #c8973a; }
+
+    /* ── Tabs ──────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      max-width: 680px;
+      margin: 0 auto 0;
+      border-bottom: 2px solid #cbd5e0;
+    }
+    .tab-btn {
+      padding: 10px 24px;
+      border: none;
+      background: none;
+      font-size: .92rem;
+      font-weight: 600;
+      color: #718096;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn.active { color: #2b6cb0; border-bottom-color: #2b6cb0; }
+    .tab-btn:hover:not(.active) { color: #2d3748; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Card ──────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.10);
+      max-width: 680px;
+      margin: 0 auto 28px;
+      padding: 28px 28px 20px;
+    }
+
+    /* ── Fields ────────────────────────────────────────────── */
+    .field { margin-bottom: 18px; }
+    label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #4a5568;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color .2s;
+      background: #fafbfc;
+    }
+    input:focus { outline: none; border-color: #2b6cb0; background: #fff; }
+    .hint { font-size: .75rem; color: #718096; margin-top: 4px; }
+
+    /* ── Payee autocomplete ─────────────────────────────────── */
+    .combo-wrap { position: relative; }
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #fff;
+      border: 1.5px solid #cbd5e0;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 50;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+    .dropdown.open { display: block; }
+    .dropdown-item {
+      padding: 9px 14px;
+      cursor: pointer;
+      font-size: .95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dropdown-item:hover { background: #ebf4ff; }
+    .dropdown-item .del-btn {
+      background: none; border: none; cursor: pointer;
+      color: #e53e3e; font-size: .8rem; padding: 2px 4px;
+      border-radius: 4px; opacity: 0; transition: opacity .15s;
+    }
+    .dropdown-item:hover .del-btn { opacity: 1; }
+
+    /* ── Amount input ───────────────────────────────────────── */
+    .amount-input-wrap {
+      display: flex;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fafbfc;
+      transition: border-color .2s;
+    }
+    .amount-input-wrap:focus-within { border-color: #2b6cb0; background: #fff; }
+    .currency-prefix {
+      display: flex; align-items: center;
+      padding: 0 12px;
+      background: #2b6cb0; color: #fff;
+      font-weight: 700; font-size: 1rem; flex-shrink: 0;
+    }
+    .amount-input-wrap input {
+      border: none; border-radius: 0; background: transparent; flex: 1;
+    }
+    .amount-input-wrap input:focus { background: transparent; }
+
+    /* ── Words box ──────────────────────────────────────────── */
+    .words-box {
+      background: #f7f8fa;
+      border: 1.5px dashed #a0aec0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: .92rem; font-weight: 700;
+      color: #1a1a2e; letter-spacing: .03em;
+      min-height: 52px; word-break: break-word;
+    }
+    .words-box.empty { color: #a0aec0; font-weight: 400; font-family: inherit; }
+
+    /* ── Buttons ────────────────────────────────────────────── */
+    .btn-row { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+    button.btn {
+      padding: 10px 24px; border: none; border-radius: 8px;
+      font-size: .95rem; font-weight: 600; cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+    button.btn:active { transform: scale(.97); }
+    .btn-primary { background: #2b6cb0; color: #fff; }
+    .btn-primary:hover { background: #2c5282; }
+    .btn-secondary { background: #e2e8f0; color: #2d3748; }
+    .btn-secondary:hover { background: #cbd5e0; }
+    .btn-danger { background: #fff5f5; color: #c53030; border: 1.5px solid #feb2b2; }
+    .btn-danger:hover { background: #fed7d7; }
+
+    /* ── Settings grid ──────────────────────────────────────── */
+    .settings-section-title {
+      font-size: .78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: #2b6cb0;
+      margin: 24px 0 12px; padding-bottom: 6px;
+      border-bottom: 1.5px solid #bee3f8;
+    }
+    .settings-section-title:first-child { margin-top: 0; }
+
+    .pos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .pos-field label {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: .82rem;
+      color: #4a5568;
+    }
+    .pos-field .input-unit-wrap {
+      display: flex;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fafbfc;
+      transition: border-color .2s;
+    }
+    .pos-field .input-unit-wrap:focus-within { border-color: #2b6cb0; background: #fff; }
+    .pos-field .input-unit-wrap input {
+      border: none; border-radius: 0; background: transparent;
+      flex: 1; padding: 8px 10px; font-size: .95rem; width: 100%;
+    }
+    .pos-field .input-unit-wrap input:focus { background: transparent; }
+    .unit-label {
+      display: flex; align-items: center; padding: 0 10px;
+      background: #edf2f7; color: #718096;
+      font-size: .82rem; font-weight: 600; flex-shrink: 0;
+    }
+
+    .font-size-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 4px;
+    }
+    .font-size-row .input-unit-wrap { width: 120px; }
+
+    /* ── Check preview (screen only) ───────────────────────── */
+    .check-preview { max-width: 680px; margin: 0 auto 24px; }
+    .check-preview h2 {
+      font-size: .78rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .06em; color: #718096; margin-bottom: 10px;
+    }
+    .check {
+      background: #fffdf0;
+      border: 1.5px solid #c6a84a;
+      border-radius: 6px; padding: 18px 24px 14px;
+      font-family: 'Courier New', monospace;
+      position: relative; box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .check-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .check-bank { font-size: .75rem; color: #888; line-height: 1.4; }
+    .check-date-row { display: flex; justify-content: flex-end; margin-bottom: 10px; font-size: .82rem; }
+    .check-date-label { color: #888; margin-right: 8px; }
+    .check-date-value { border-bottom: 1px solid #aaa; min-width: 120px; text-align: center; padding-bottom: 1px; }
+    .check-payto-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 10px; font-size: .85rem; }
+    .check-payto-label { color: #555; white-space: nowrap; }
+    .check-payto-line { border-bottom: 1px solid #555; flex: 1; padding-bottom: 2px; font-weight: 700; min-height: 1.3em; }
+    .check-amount-box {
+      float: right; border: 1.5px solid #555; padding: 3px 10px;
+      font-weight: 700; font-size: .88rem; min-width: 130px;
+      text-align: right; margin-left: 12px; margin-bottom: 4px; background: #fff;
+    }
+    .check-words-row {
+      border-bottom: 1px solid #555; padding-bottom: 3px;
+      font-size: .75rem; font-weight: 700; color: #1a1a2e;
+      min-height: 1.5em; letter-spacing: .02em; word-break: break-word; clear: right;
+    }
+    .check-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 14px; font-size: .72rem; color: #888; }
+    .check-sig { border-bottom: 1px solid #555; min-width: 160px; text-align: center; padding-top: 18px; color: #555; }
+
+    /* ── Print ──────────────────────────────────────────────── */
+    @media print {
+      @page { size: 8in 3in; margin: 0; }
+      html, body { width: 8in; height: 3in; margin: 0; padding: 0; background: transparent; overflow: hidden; }
+      body > * { display: none !important; }
+      #print-overlay { display: block !important; }
+    }
+
+    #print-overlay { display: none; }
+
+    @media print {
+      #print-overlay {
+        display: block !important;
+        position: fixed;
+        top: 0; left: 0;
+        width: 8in; height: 3in;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #000;
+        background: transparent;
+      }
+      #po-date, #po-payto, #po-amount, #po-words {
+        position: absolute;
+        /* top / left set via inline style from JS settings */
+      }
+      #po-payto, #po-amount { font-weight: bold; }
+      #po-words { font-weight: bold; right: 0.3in; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Philippine <span>Check</span> Printer</h1>
+
+<!-- ── Tabs ── -->
+<div class="tabs no-print">
+  <button class="tab-btn active" onclick="switchTab('print')">Print Check</button>
+  <button class="tab-btn" onclick="switchTab('settings')">Field Positions</button>
+</div>
+
+<!-- ── Print Tab ── -->
+<div id="tab-print" class="tab-panel active">
+  <div class="card no-print">
+
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="inp-date" />
+    </div>
+
+    <div class="field">
+      <label>Pay To the Order Of</label>
+      <div class="combo-wrap">
+        <input type="text" id="inp-payto" placeholder="Enter payee name…" autocomplete="off" />
+        <div class="dropdown" id="payto-dropdown"></div>
+      </div>
+      <p class="hint">Type a name and press Enter to save it for future use.</p>
+    </div>
+
+    <div class="field">
+      <label>Amount (₱)</label>
+      <div class="amount-input-wrap">
+        <span class="currency-prefix">₱</span>
+        <input type="number" id="inp-amount" placeholder="0.00" min="0" step="0.01" style="padding:10px 14px;" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Amount in Words <span style="color:#c8973a;font-size:.7rem;">(BSP format — auto-generated)</span></label>
+      <div class="words-box empty" id="words-display">Enter an amount above to generate the written form.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨 Print Check</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Settings Tab ── -->
+<div id="tab-settings" class="tab-panel">
+  <div class="card no-print">
+    <p class="hint" style="margin-bottom:16px;">
+      Set each field's distance from the <strong>upper-left corner</strong> of the check (in inches).
+      Print on plain paper first, hold it over the check against a light to calibrate.
+    </p>
+
+    <!-- Date -->
+    <div class="settings-section-title">Date</div>
+    <div class="pos-grid">
+      <div class="pos-field">
+        <label>From top</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-date-top" step="0.01" min="0" max="3" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+      <div class="pos-field">
+        <label>From left</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-date-left" step="0.01" min="0" max="8" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+    </div>
+    <div class="font-size-row">
+      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
+      <div class="input-unit-wrap">
+        <input type="number" id="s-date-size" step="0.5" min="6" max="24" />
+        <span class="unit-label">pt</span>
+      </div>
+    </div>
+
+    <!-- Pay To -->
+    <div class="settings-section-title">Pay To</div>
+    <div class="pos-grid">
+      <div class="pos-field">
+        <label>From top</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-payto-top" step="0.01" min="0" max="3" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+      <div class="pos-field">
+        <label>From left</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-payto-left" step="0.01" min="0" max="8" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+    </div>
+    <div class="font-size-row">
+      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
+      <div class="input-unit-wrap">
+        <input type="number" id="s-payto-size" step="0.5" min="6" max="24" />
+        <span class="unit-label">pt</span>
+      </div>
+    </div>
+
+    <!-- Amount (numeric) -->
+    <div class="settings-section-title">Amount (₱ numeric)</div>
+    <div class="pos-grid">
+      <div class="pos-field">
+        <label>From top</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-amount-top" step="0.01" min="0" max="3" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+      <div class="pos-field">
+        <label>From left</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-amount-left" step="0.01" min="0" max="8" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+    </div>
+    <div class="font-size-row">
+      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
+      <div class="input-unit-wrap">
+        <input type="number" id="s-amount-size" step="0.5" min="6" max="24" />
+        <span class="unit-label">pt</span>
+      </div>
+    </div>
+
+    <!-- Amount in words -->
+    <div class="settings-section-title">Amount in Words</div>
+    <div class="pos-grid">
+      <div class="pos-field">
+        <label>From top</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-words-top" step="0.01" min="0" max="3" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+      <div class="pos-field">
+        <label>From left</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="s-words-left" step="0.01" min="0" max="8" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+    </div>
+    <div class="font-size-row">
+      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
+      <div class="input-unit-wrap">
+        <input type="number" id="s-words-size" step="0.5" min="6" max="24" />
+        <span class="unit-label">pt</span>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn btn-danger" onclick="resetSettings()">Reset to Defaults</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+    </div>
+    <p class="hint" id="settings-saved-msg" style="text-align:right;color:#2f855a;display:none;margin-top:8px;">Settings saved.</p>
+  </div>
+</div>
+
+<!-- ── Check Preview (screen) ── -->
+<div class="check-preview">
+  <h2 class="no-print">Check Preview</h2>
+  <div class="check">
+    <div class="check-header">
+      <div class="check-bank">
+        <div style="font-weight:700;color:#2b6cb0;font-size:.9rem;">YOUR BANK NAME</div>
+        <div>Branch / Account</div>
+      </div>
+      <div style="font-size:.7rem;color:#aaa;">No. 000001</div>
+    </div>
+    <div class="check-date-row">
+      <span class="check-date-label">DATE:</span>
+      <span class="check-date-value" id="preview-date"></span>
+    </div>
+    <div class="check-payto-row">
+      <span class="check-payto-label">PAY TO THE ORDER OF</span>
+      <span class="check-payto-line" id="preview-payto"></span>
+    </div>
+    <div>
+      <div class="check-amount-box" id="preview-amount">₱</div>
+      <div class="check-words-row" id="preview-words"></div>
+    </div>
+    <div class="check-footer">
+      <div>
+        <div style="margin-bottom:2px;color:#777;">MEMO / FOR:</div>
+        <div style="border-bottom:1px solid #aaa;width:180px;"></div>
+      </div>
+      <div style="text-align:center;">
+        <div class="check-sig">Authorized Signature</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Print overlay (text only, no borders) ── -->
+<div id="print-overlay">
+  <span id="po-date"></span>
+  <span id="po-payto"></span>
+  <span id="po-amount"></span>
+  <span id="po-words"></span>
+</div>
+
+<script>
+// ── Default field positions (inches from upper-left) ─────────
+const DEFAULTS = {
+  date:   { top: 0.42, left: 5.80, size: 10 },
+  payto:  { top: 0.88, left: 1.85, size: 11 },
+  amount: { top: 0.82, left: 6.40, size: 11 },
+  words:  { top: 1.30, left: 0.35, size: 10 },
+};
+
+const SETTINGS_KEY = 'ph_check_positions';
+
+function loadSettings() {
+  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SETTINGS_KEY))); }
+  catch { return Object.assign({}, DEFAULTS); }
+}
+
+function saveSettings() {
+  const s = {
+    date:   { top: +document.getElementById('s-date-top').value,   left: +document.getElementById('s-date-left').value,   size: +document.getElementById('s-date-size').value },
+    payto:  { top: +document.getElementById('s-payto-top').value,  left: +document.getElementById('s-payto-left').value,  size: +document.getElementById('s-payto-size').value },
+    amount: { top: +document.getElementById('s-amount-top').value, left: +document.getElementById('s-amount-left').value, size: +document.getElementById('s-amount-size').value },
+    words:  { top: +document.getElementById('s-words-top').value,  left: +document.getElementById('s-words-left').value,  size: +document.getElementById('s-words-size').value },
+  };
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  applyPositions(s);
+  const msg = document.getElementById('settings-saved-msg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+}
+
+function resetSettings() {
+  localStorage.removeItem(SETTINGS_KEY);
+  populateSettingsForm(DEFAULTS);
+  applyPositions(DEFAULTS);
+  const msg = document.getElementById('settings-saved-msg');
+  msg.textContent = 'Reset to defaults.';
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; msg.textContent = 'Settings saved.'; }, 2000);
+}
+
+function populateSettingsForm(s) {
+  document.getElementById('s-date-top').value    = s.date.top;
+  document.getElementById('s-date-left').value   = s.date.left;
+  document.getElementById('s-date-size').value   = s.date.size;
+  document.getElementById('s-payto-top').value   = s.payto.top;
+  document.getElementById('s-payto-left').value  = s.payto.left;
+  document.getElementById('s-payto-size').value  = s.payto.size;
+  document.getElementById('s-amount-top').value  = s.amount.top;
+  document.getElementById('s-amount-left').value = s.amount.left;
+  document.getElementById('s-amount-size').value = s.amount.size;
+  document.getElementById('s-words-top').value   = s.words.top;
+  document.getElementById('s-words-left').value  = s.words.left;
+  document.getElementById('s-words-size').value  = s.words.size;
+}
+
+function applyPositions(s) {
+  const set = (id, field) => {
+    const el = document.getElementById(id);
+    el.style.top      = s[field].top  + 'in';
+    el.style.left     = s[field].left + 'in';
+    el.style.fontSize = s[field].size + 'pt';
+  };
+  set('po-date',   'date');
+  set('po-payto',  'payto');
+  set('po-amount', 'amount');
+  set('po-words',  'words');
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
+}
+
+// ── Payee storage ─────────────────────────────────────────────
+const PAYEE_KEY = 'ph_check_payees';
+function getPayees() {
+  try { return JSON.parse(localStorage.getItem(PAYEE_KEY)) || []; } catch { return []; }
+}
+function savePayee(name) {
+  const list = getPayees();
+  const clean = name.trim().toUpperCase();
+  if (!clean || list.includes(clean)) return;
+  list.unshift(clean);
+  localStorage.setItem(PAYEE_KEY, JSON.stringify(list.slice(0, 100)));
+}
+function deletePayee(name) {
+  localStorage.setItem(PAYEE_KEY, JSON.stringify(getPayees().filter(p => p !== name)));
+}
+
+// ── Payee dropdown ────────────────────────────────────────────
+const paytoInput = document.getElementById('inp-payto');
+const dropdown   = document.getElementById('payto-dropdown');
+
+function renderDropdown(filter) {
+  const q = (filter || '').trim().toUpperCase();
+  const matches = q ? getPayees().filter(p => p.includes(q)) : getPayees();
+  if (!matches.length) { dropdown.classList.remove('open'); return; }
+  dropdown.innerHTML = matches.map(p => `
+    <div class="dropdown-item" data-name="${encodeURIComponent(p)}">
+      <span>${p}</span>
+      <button class="del-btn" title="Remove" onclick="removePayee(event,'${encodeURIComponent(p)}')">✕</button>
+    </div>`).join('');
+  dropdown.querySelectorAll('.dropdown-item').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      if (e.target.classList.contains('del-btn')) return;
+      paytoInput.value = decodeURIComponent(el.dataset.name);
+      updatePreview();
+      dropdown.classList.remove('open');
+    });
+  });
+  dropdown.classList.add('open');
+}
+function removePayee(e, encoded) {
+  e.preventDefault(); e.stopPropagation();
+  deletePayee(decodeURIComponent(encoded));
+  renderDropdown(paytoInput.value);
+}
+paytoInput.addEventListener('input',  () => { renderDropdown(paytoInput.value); updatePreview(); });
+paytoInput.addEventListener('focus',  () => renderDropdown(paytoInput.value));
+paytoInput.addEventListener('blur',   () => setTimeout(() => dropdown.classList.remove('open'), 150));
+paytoInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    savePayee(paytoInput.value);
+    paytoInput.value = paytoInput.value.trim().toUpperCase();
+    dropdown.classList.remove('open');
+    updatePreview();
+    e.preventDefault();
+  }
+  if (e.key === 'Escape') dropdown.classList.remove('open');
+});
+
+// ── Amount → Words (BSP) ──────────────────────────────────────
+const ONES  = ['','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE',
+               'TEN','ELEVEN','TWELVE','THIRTEEN','FOURTEEN','FIFTEEN','SIXTEEN',
+               'SEVENTEEN','EIGHTEEN','NINETEEN'];
+const TENS  = ['','','TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];
+const SCALE = ['','THOUSAND','MILLION','BILLION','TRILLION'];
+
+function threeDigits(n) {
+  let s = '';
+  if (n >= 100) { s += ONES[Math.floor(n/100)] + ' HUNDRED'; n %= 100; if (n) s += ' '; }
+  if (n >= 20)  { s += TENS[Math.floor(n/10)]; if (n%10) s += '-' + ONES[n%10]; }
+  else if (n>0) { s += ONES[n]; }
+  return s;
+}
+
+function amountToWords(amount) {
+  if (isNaN(amount) || amount < 0) return '';
+  const rounded   = Math.round(amount * 100);
+  const pesos     = Math.floor(rounded / 100);
+  const centavos  = rounded % 100;
+  if (pesos === 0 && centavos === 0) return '';
+  let pesoWords = pesos === 0 ? 'ZERO' : (() => {
+    const parts = []; let rem = pesos, idx = 0;
+    while (rem > 0) {
+      const chunk = rem % 1000;
+      if (chunk) parts.unshift(SCALE[idx] ? threeDigits(chunk) + ' ' + SCALE[idx] : threeDigits(chunk));
+      rem = Math.floor(rem / 1000); idx++;
+    }
+    return parts.join(' ');
+  })();
+  return pesoWords + ' PESOS AND ' + String(centavos).padStart(2,'0') + '/100 ONLY';
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function formatAmount(val) {
+  return '₱' + Number(val).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function formatDate(val) {
+  if (!val) return '';
+  const [y,m,d] = val.split('-');
+  const months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  return months[+m-1] + ' ' + +d + ', ' + y;
+}
+
+// ── Update preview + print overlay ───────────────────────────
+function updatePreview() {
+  const date   = document.getElementById('inp-date').value;
+  const payto  = paytoInput.value.trim().toUpperCase();
+  const raw    = document.getElementById('inp-amount').value;
+  const amount = parseFloat(raw);
+  const hasAmt = raw !== '' && !isNaN(amount) && amount >= 0;
+
+  document.getElementById('preview-date').textContent  = formatDate(date);
+  document.getElementById('preview-payto').textContent = payto;
+  document.getElementById('preview-amount').textContent = hasAmt ? formatAmount(amount) : '₱';
+
+  const wordsEl    = document.getElementById('words-display');
+  const previewWEl = document.getElementById('preview-words');
+
+  if (hasAmt) {
+    const words = amountToWords(amount);
+    if (words) {
+      wordsEl.textContent = words;
+      wordsEl.classList.remove('empty');
+      previewWEl.textContent = words + ' ***';
+    } else {
+      wordsEl.textContent = 'Enter an amount above to generate the written form.';
+      wordsEl.classList.add('empty');
+      previewWEl.textContent = '';
+    }
+  } else {
+    wordsEl.textContent = 'Enter an amount above to generate the written form.';
+    wordsEl.classList.add('empty');
+    previewWEl.textContent = '';
+  }
+
+  // Sync print overlay text
+  document.getElementById('po-date').textContent   = document.getElementById('preview-date').textContent;
+  document.getElementById('po-payto').textContent  = document.getElementById('preview-payto').textContent;
+  document.getElementById('po-amount').textContent = document.getElementById('preview-amount').textContent;
+  document.getElementById('po-words').textContent  = document.getElementById('preview-words').textContent;
+}
+
+function clearForm() {
+  document.getElementById('inp-date').value   = '';
+  paytoInput.value = '';
+  document.getElementById('inp-amount').value = '';
+  updatePreview();
+}
+
+// ── Init ──────────────────────────────────────────────────────
+const settings = loadSettings();
+populateSettingsForm(settings);
+applyPositions(settings);
+
+document.getElementById('inp-date').addEventListener('input', updatePreview);
+document.getElementById('inp-amount').addEventListener('input', updatePreview);
+
+const today = new Date();
+document.getElementById('inp-date').value =
+  today.getFullYear() + '-' +
+  String(today.getMonth()+1).padStart(2,'0') + '-' +
+  String(today.getDate()).padStart(2,'0');
+updatePreview();
+</script>
+</body>
+</html>
