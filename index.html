@@ -685,7 +685,7 @@ function updatePreview() {
     if (words) {
       wordsEl.textContent = words;
       wordsEl.classList.remove('empty');
-      previewWEl.textContent = words + ' ***';
+      previewWEl.textContent = words;
     } else {
       wordsEl.textContent = 'Enter an amount above to generate the written form.';
       wordsEl.classList.add('empty');
