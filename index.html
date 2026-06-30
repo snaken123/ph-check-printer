@@ -247,9 +247,16 @@
     .check-sig { border-bottom: 1px solid #555; min-width: 160px; text-align: center; padding-top: 18px; color: #555; }
 
     /* ── Print ──────────────────────────────────────────────── */
+    /*
+      Paper  : Letter 8.5in × 11in (portrait)
+      Check  : 8in × 3in, placed at LOWER-RIGHT corner of letter paper
+      Offset : top = 11 - 3 = 8in, left = 8.5 - 8 = 0.5in
+      Field positions in settings are measured from upper-left of the CHECK;
+      JS adds the offset so they land correctly on the letter page.
+    */
     @media print {
-      @page { size: 8in 3in; margin: 0; }
-      html, body { width: 8in; height: 3in; margin: 0; padding: 0; background: transparent; overflow: hidden; }
+      @page { size: 8.5in 11in; margin: 0; }
+      html, body { width: 8.5in; height: 11in; margin: 0; padding: 0; background: transparent; overflow: hidden; }
       body > * { display: none !important; }
       #print-overlay { display: block !important; }
     }
@@ -261,17 +268,17 @@
         display: block !important;
         position: fixed;
         top: 0; left: 0;
-        width: 8in; height: 3in;
+        width: 8.5in; height: 11in;
         font-family: Arial, Helvetica, sans-serif;
         color: #000;
         background: transparent;
       }
       #po-date, #po-payto, #po-amount, #po-words {
         position: absolute;
-        /* top / left set via inline style from JS settings */
+        /* top / left set via inline style from JS — already includes the 8in/0.5in letter offset */
       }
       #po-payto, #po-amount { font-weight: bold; }
-      #po-words { font-weight: bold; right: 0.3in; }
+      #po-words { font-weight: bold; }
     }
   </style>
 </head>
@@ -487,7 +494,14 @@
 </div>
 
 <script>
-// ── Default field positions (inches from upper-left) ─────────
+// ── Letter paper offset ───────────────────────────────────────
+// Check (8×3in) sits at the lower-right of letter paper (8.5×11in).
+// All field positions in settings are relative to the CHECK's upper-left.
+// We add these offsets when printing so text lands on the correct spot.
+const LETTER_TOP  = 8.0;   // 11 - 3
+const LETTER_LEFT = 0.5;   // 8.5 - 8
+
+// ── Default field positions (inches from upper-left of CHECK) ─
 const DEFAULTS = {
   date:   { top: 0.42, left: 5.80, size: 10 },
   payto:  { top: 0.88, left: 1.85, size: 11 },
@@ -544,8 +558,8 @@ function populateSettingsForm(s) {
 function applyPositions(s) {
   const set = (id, field) => {
     const el = document.getElementById(id);
-    el.style.top      = s[field].top  + 'in';
-    el.style.left     = s[field].left + 'in';
+    el.style.top      = (s[field].top  + LETTER_TOP)  + 'in';
+    el.style.left     = (s[field].left + LETTER_LEFT) + 'in';
     el.style.fontSize = s[field].size + 'pt';
   };
   set('po-date',   'date');
