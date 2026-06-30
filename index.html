@@ -212,6 +212,32 @@
     }
     .font-size-row .input-unit-wrap { width: 120px; }
 
+    /* ── Date parts ─────────────────────────────────────────── */
+    .date-parts-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1.5px solid #cbd5e0;
+      border-radius: 8px;
+      background: #fafbfc;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .date-parts-wrap:focus-within { border-color: #2b6cb0; background: #fff; }
+    .date-parts-wrap input[type="number"] {
+      border: none; border-radius: 0; background: transparent;
+      width: 54px; padding: 10px 10px; font-size: 1rem; text-align: center;
+      -moz-appearance: textfield;
+    }
+    .date-parts-wrap input[type="number"]::-webkit-inner-spin-button,
+    .date-parts-wrap input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .date-parts-wrap input:focus { background: transparent; }
+    .date-sep {
+      width: 1px; height: 24px;
+      background: #cbd5e0;
+      flex-shrink: 0;
+    }
+
     /* ── Check preview (screen only) ───────────────────────── */
     .check-preview { max-width: 680px; margin: 0 auto 24px; }
     .check-preview h2 {
@@ -298,7 +324,13 @@
 
     <div class="field">
       <label>Date</label>
-      <input type="date" id="inp-date" />
+      <div class="date-parts-wrap">
+        <input type="number" id="inp-mm" placeholder="MM" min="1" max="12" maxlength="2" />
+        <span class="date-sep"></span>
+        <input type="number" id="inp-dd" placeholder="DD" min="1" max="31" maxlength="2" />
+        <span class="date-sep"></span>
+        <input type="number" id="inp-yyyy" placeholder="YYYY" min="1900" max="2999" maxlength="4" style="width:90px;" />
+      </div>
     </div>
 
     <div class="field">
@@ -671,23 +703,26 @@ function amountToWords(amount) {
 function formatAmount(val) {
   return '₱' + Number(val).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
-function formatDate(val) {
-  if (!val) return '';
-  const [y,m,d] = val.split('-');
-  const months = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
-  return months[+m-1] + ' ' + +d + ', ' + y;
+function getDateParts() {
+  const mm   = document.getElementById('inp-mm').value.trim();
+  const dd   = document.getElementById('inp-dd').value.trim();
+  const yyyy = document.getElementById('inp-yyyy').value.trim();
+  return { mm, dd, yyyy };
+}
+function formatDate() {
+  const { mm, dd, yyyy } = getDateParts();
+  if (!mm && !dd && !yyyy) return '';
+  return String(mm).padStart(2,'0') + ' ' + String(dd).padStart(2,'0') + ' ' + yyyy;
 }
 
 // ── Update preview + print overlay ───────────────────────────
 function updatePreview() {
-  const date   = document.getElementById('inp-date').value;
   const payto  = paytoInput.value.trim().toUpperCase();
   const raw    = document.getElementById('inp-amount').value;
   const amount = parseFloat(raw);
   const hasAmt = raw !== '' && !isNaN(amount) && amount >= 0;
 
-  document.getElementById('preview-date').textContent  = formatDate(date);
+  document.getElementById('preview-date').textContent  = formatDate();
   document.getElementById('preview-payto').textContent = payto;
   document.getElementById('preview-amount').textContent = hasAmt ? formatAmount(amount) : '₱';
 
@@ -719,7 +754,9 @@ function updatePreview() {
 }
 
 function clearForm() {
-  document.getElementById('inp-date').value   = '';
+  document.getElementById('inp-mm').value   = '';
+  document.getElementById('inp-dd').value   = '';
+  document.getElementById('inp-yyyy').value = '';
   paytoInput.value = '';
   document.getElementById('inp-amount').value = '';
   updatePreview();
@@ -730,14 +767,21 @@ const settings = loadSettings();
 populateSettingsForm(settings);
 applyPositions(settings);
 
-document.getElementById('inp-date').addEventListener('input', updatePreview);
+document.getElementById('inp-mm').addEventListener('input', function() {
+  if (this.value.length >= 2) document.getElementById('inp-dd').focus();
+  updatePreview();
+});
+document.getElementById('inp-dd').addEventListener('input', function() {
+  if (this.value.length >= 2) document.getElementById('inp-yyyy').focus();
+  updatePreview();
+});
+document.getElementById('inp-yyyy').addEventListener('input', updatePreview);
 document.getElementById('inp-amount').addEventListener('input', updatePreview);
 
 const today = new Date();
-document.getElementById('inp-date').value =
-  today.getFullYear() + '-' +
-  String(today.getMonth()+1).padStart(2,'0') + '-' +
-  String(today.getDate()).padStart(2,'0');
+document.getElementById('inp-mm').value   = String(today.getMonth()+1).padStart(2,'0');
+document.getElementById('inp-dd').value   = String(today.getDate()).padStart(2,'0');
+document.getElementById('inp-yyyy').value = today.getFullYear();
 updatePreview();
 </script>
 </body>
