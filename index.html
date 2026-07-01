@@ -667,7 +667,7 @@ function renderPrintersBanner(s) {
 
 // ── Seed built-in printer profiles ───────────────────────────
 // Bump _v to force-overwrite the stored built-in profiles on all devices.
-const BUILTIN_SEED_VERSION = 4;
+const BUILTIN_SEED_VERSION = 5;
 (function seedPrinters() {
   const profiles = getProfiles();
 
@@ -687,7 +687,7 @@ const BUILTIN_SEED_VERSION = 4;
   const hp520 = {
     _v: BUILTIN_SEED_VERSION,
     pageWidth: 8.5, pageHeight: 11,
-    offsetTop: 0, offsetLeft: 0,
+    offsetTop: 0, offsetLeft: 3.0,
     printRotation: 90,
     date:   { top: 0.42, left: 5.80, size: 10 },
     payto:  { top: 0.88, left: 1.85, size: 11 },
