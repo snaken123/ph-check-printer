@@ -1052,7 +1052,7 @@ function amountToWords(amount) {
 
 // ── Helpers ───────────────────────────────────────────────────
 function formatAmount(val) {
-  return '₱' + Number(val).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return Number(val).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 function getDateParts() {
   const mm   = document.getElementById('inp-mm').value.trim();
