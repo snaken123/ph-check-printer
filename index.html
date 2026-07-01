@@ -368,16 +368,18 @@
         width: 100%; height: 100%;
       }
 
-      /* Rotate-90 mode: used when check is 90° CW on right side of portrait letter.
-         The inner container is sized landscape (11"×8.5") and rotated CW so that
-         text prints readable when the check is detached and held landscape.
-         Positioned at left:8.5in so that after rotate(90deg) it fills the portrait page. */
+      /* Rotate-90 mode: check is 90° CW on right side of portrait letter, fed
+         bottom-first. Bottom-first feeding reverses BOTH axes (180° flip), so:
+         - We rotate the inner container -90° (CCW) anchored at bottom-left
+         - This puts text on the LEFT side of the preview, which after the
+           physical 180° flip lands on the RIGHT side (where the check is)
+         - Text characters also end up readable when the check is held landscape */
       #print-overlay.rotate-90 #print-inner {
         position: absolute;
-        left: 8.5in; top: 0;
+        left: 0; top: 11in;
         width: 11in; height: 8.5in;
         transform-origin: 0 0;
-        transform: rotate(90deg);
+        transform: rotate(-90deg);
       }
 
       #po-date, #po-payto, #po-amount, #po-words {
@@ -687,7 +689,7 @@ const BUILTIN_SEED_VERSION = 5;
   const hp520 = {
     _v: BUILTIN_SEED_VERSION,
     pageWidth: 8.5, pageHeight: 11,
-    offsetTop: 0, offsetLeft: 0,
+    offsetTop: 0, offsetLeft: 3.0,
     printRotation: 90,
     date:   { top: 0.42, left: 5.80, size: 10 },
     payto:  { top: 0.88, left: 1.85, size: 11 },
