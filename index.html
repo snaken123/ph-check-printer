@@ -376,10 +376,10 @@
          - Text characters also end up readable when the check is held landscape */
       #print-overlay.rotate-90 #print-inner {
         position: absolute;
-        left: 0; top: 11in;
+        left: 0; top: 0;
         width: 11in; height: 8.5in;
         transform-origin: 0 0;
-        transform: rotate(-90deg);
+        transform: translateY(11in) rotate(-90deg);
       }
 
       #po-date, #po-payto, #po-amount, #po-words {
