@@ -397,7 +397,8 @@
         <input type="number" id="inp-dd" placeholder="DD" min="1" max="31" maxlength="2" />
         <span class="date-sep"></span>
         <input type="number" id="inp-yyyy" placeholder="YYYY" min="1900" max="2999" maxlength="4" style="width:90px;" />
-        <button type="button" id="btn-today" title="Set to today" style="border:none;background:transparent;cursor:pointer;padding:8px 10px;color:#2b6cb0;font-size:1.1rem;line-height:1;flex-shrink:0;">&#128197;</button>
+        <button type="button" id="btn-calendar" title="Pick a date" style="border:none;background:transparent;cursor:pointer;padding:8px 10px;color:#2b6cb0;font-size:1.1rem;line-height:1;flex-shrink:0;">&#128197;</button>
+        <input type="date" id="inp-date-picker" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;" />
       </div>
     </div>
 
@@ -1076,7 +1077,18 @@ function setToday() {
   document.getElementById('inp-yyyy').value = t.getFullYear();
   updatePreview();
 }
-document.getElementById('btn-today').addEventListener('click', setToday);
+const datePicker = document.getElementById('inp-date-picker');
+document.getElementById('btn-calendar').addEventListener('click', () => {
+  datePicker.showPicker ? datePicker.showPicker() : datePicker.click();
+});
+datePicker.addEventListener('change', () => {
+  if (!datePicker.value) return;
+  const [y, m, d] = datePicker.value.split('-');
+  document.getElementById('inp-mm').value   = m;
+  document.getElementById('inp-dd').value   = d;
+  document.getElementById('inp-yyyy').value = y;
+  updatePreview();
+});
 setToday();
 </script>
 </body>
