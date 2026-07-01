@@ -360,6 +360,26 @@
         background: transparent;
         /* width/height/page size injected by #dynamic-page-style per printer */
       }
+
+      /* Default inner: no rotation */
+      #print-inner {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+      }
+
+      /* Rotate-90 mode: used when check is 90° CW on right side of portrait letter.
+         The inner container is sized landscape (11"×8.5") and rotated CW so that
+         text prints readable when the check is detached and held landscape.
+         Positioned at left:8.5in so that after rotate(90deg) it fills the portrait page. */
+      #print-overlay.rotate-90 #print-inner {
+        position: absolute;
+        left: 8.5in; top: 0;
+        width: 11in; height: 8.5in;
+        transform-origin: 0 0;
+        transform: rotate(90deg);
+      }
+
       #po-date, #po-payto, #po-amount, #po-words {
         position: absolute;
       }
@@ -525,10 +545,12 @@
 
 <!-- ── Print overlay (text only, no borders) ── -->
 <div id="print-overlay">
-  <span id="po-date"></span>
-  <span id="po-payto"></span>
-  <span id="po-amount"></span>
-  <span id="po-words"></span>
+  <div id="print-inner">
+    <span id="po-date"></span>
+    <span id="po-payto"></span>
+    <span id="po-amount"></span>
+    <span id="po-words"></span>
+  </div>
 </div>
 
 <script>
@@ -597,8 +619,18 @@ function loadSettings() {
 }
 
 function applyPositions(s) {
-  const oTop  = s.offsetTop  !== undefined ? s.offsetTop  : DEFAULTS.offsetTop;
-  const oLeft = s.offsetLeft !== undefined ? s.offsetLeft : DEFAULTS.offsetLeft;
+  const oTop  = s.offsetTop  !== undefined ? s.offsetTop  : 0;
+  const oLeft = s.offsetLeft !== undefined ? s.offsetLeft : 0;
+  const overlay = document.getElementById('print-overlay');
+
+  // Toggle landscape-rotation mode for printers where the check is
+  // rotated 90° CW on the right side of the letter paper.
+  if (s.printRotation === 90) {
+    overlay.classList.add('rotate-90');
+  } else {
+    overlay.classList.remove('rotate-90');
+  }
+
   const set = (id, field) => {
     const el = document.getElementById(id);
     el.style.top      = (s[field].top  + oTop)  + 'in';
@@ -635,7 +667,7 @@ function renderPrintersBanner(s) {
 
 // ── Seed built-in printer profiles ───────────────────────────
 // Bump _v to force-overwrite the stored built-in profiles on all devices.
-const BUILTIN_SEED_VERSION = 3;
+const BUILTIN_SEED_VERSION = 4;
 (function seedPrinters() {
   const profiles = getProfiles();
 
@@ -647,19 +679,21 @@ const BUILTIN_SEED_VERSION = 3;
     amount: { top: 0.82, left: 6.40, size: 11 },
     words:  { top: 1.30, left: 0.35, size: 10 },
   };
-  // HP Smart Tank 520: check is in landscape orientation at the physical BOTTOM
-  // of the portrait letter paper. Paper is fed BOTTOM-FIRST so the check enters
-  // the printer first. offsetTop=8.0 places fields in the bottom 3" of the
-  // 11" letter page (CSS top 8–11 in = physical bottom 0–3 in from leading edge).
-  // offsetLeft=0.5 adds a small left margin so the check aligns correctly.
+  // HP Smart Tank 520: check is rotated 90° CW standing on the right side of
+  // portrait letter paper, fed BOTTOM-FIRST. printRotation:90 causes the print
+  // overlay to rotate 90° CW, so content is laid out in landscape coordinates.
+  // In landscape space the check occupies the left 8" × top 3", matching the
+  // original DEFAULTS exactly — no coordinate conversion needed.
   const hp520 = {
     _v: BUILTIN_SEED_VERSION,
-    pageWidth: 8.5, pageHeight: 11, offsetTop: 8.0, offsetLeft: 0.5,
+    pageWidth: 8.5, pageHeight: 11,
+    offsetTop: 0, offsetLeft: 0,
+    printRotation: 90,
     date:   { top: 0.42, left: 5.80, size: 10 },
     payto:  { top: 0.88, left: 1.85, size: 11 },
     amount: { top: 0.82, left: 6.40, size: 11 },
     words:  { top: 1.30, left: 0.35, size: 10 },
-    notes: 'Feed the paper BOTTOM-FIRST — check end goes into the printer first.\nCheck sits in landscape orientation at the bottom of the letter paper.\nIn print dialog: Paper Size = Letter, Portrait, Scale = 100%, no headers/footers.',
+    notes: 'Feed the paper BOTTOM-FIRST — check end (right side) goes into the printer first.\nCheck is rotated 90° CW on the right side of the letter paper.\nIn print dialog: Paper Size = Letter, Portrait, Scale = 100%, no headers/footers.',
   };
 
   const needsUpdate = (name, seed) =>
