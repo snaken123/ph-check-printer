@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Philippine Check Printer</title>
+  <style id="dynamic-page-style"></style>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -31,9 +32,10 @@
       max-width: 680px;
       margin: 0 auto 0;
       border-bottom: 2px solid #cbd5e0;
+      flex-wrap: wrap;
     }
     .tab-btn {
-      padding: 10px 24px;
+      padding: 10px 20px;
       border: none;
       background: none;
       font-size: .92rem;
@@ -110,12 +112,6 @@
       align-items: center;
     }
     .dropdown-item:hover { background: #ebf4ff; }
-    .dropdown-item .del-btn {
-      background: none; border: none; cursor: pointer;
-      color: #e53e3e; font-size: .8rem; padding: 2px 4px;
-      border-radius: 4px; opacity: 0; transition: opacity .15s;
-    }
-    .dropdown-item:hover .del-btn { opacity: 1; }
 
     /* ── Amount input ───────────────────────────────────────── */
     .amount-input-wrap {
@@ -238,6 +234,79 @@
       flex-shrink: 0;
     }
 
+    /* ── Printer notes banner ────────────────────────────────── */
+    .printer-notes-banner {
+      max-width: 680px; margin: 0 auto 12px;
+      background: #fffbeb; border: 1.5px solid #f6e05e;
+      border-radius: 8px; padding: 10px 16px;
+      font-size: .82rem; color: #744210; line-height: 1.5;
+      display: none;
+    }
+    .printer-notes-banner strong { display: block; margin-bottom: 2px; color: #975a16; }
+
+    /* ── Printer bar ─────────────────────────────────────────── */
+    .printer-bar {
+      display: flex; align-items: center; gap: 10px;
+      max-width: 680px; margin: 0 auto 12px;
+      background: #fff; border: 1.5px solid #cbd5e0;
+      border-radius: 8px; padding: 8px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .printer-bar-label { font-size: .82rem; font-weight: 700; color: #4a5568; white-space: nowrap; }
+    .printer-bar select {
+      flex: 1; padding: 5px 10px; border: 1.5px solid #cbd5e0;
+      border-radius: 6px; font-size: .9rem; background: #fafbfc; color: #1a1a2e;
+    }
+
+    /* ── Payees list ─────────────────────────────────────────── */
+    .payee-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid #e2e8f0;
+    }
+    .payee-row:last-child { border-bottom: none; }
+    .payee-row .payee-name { flex: 1; font-size: .95rem; font-weight: 600; color: #1a1a2e; }
+    .payee-row input.payee-edit-input {
+      flex: 1; padding: 6px 10px; font-size: .95rem;
+      border: 1.5px solid #2b6cb0; border-radius: 6px; background: #fff;
+    }
+    .icon-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: .85rem; padding: 5px 8px; border-radius: 6px;
+      font-weight: 600; transition: background .15s;
+    }
+    .icon-btn.edit   { color: #2b6cb0; } .icon-btn.edit:hover   { background: #ebf4ff; }
+    .icon-btn.save   { color: #2f855a; } .icon-btn.save:hover   { background: #f0fff4; }
+    .icon-btn.cancel { color: #718096; } .icon-btn.cancel:hover { background: #edf2f7; }
+    .icon-btn.del    { color: #e53e3e; } .icon-btn.del:hover    { background: #fff5f5; }
+
+    /* ── Printers list ───────────────────────────────────────── */
+    .printer-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid #e2e8f0;
+    }
+    .printer-row:last-child { border-bottom: none; }
+    .printer-row .printer-name { flex: 1; font-size: .95rem; font-weight: 600; color: #1a1a2e; }
+    .active-badge {
+      font-size: .72rem; font-weight: 700; color: #2f855a;
+      background: #f0fff4; border: 1px solid #9ae6b4;
+      border-radius: 12px; padding: 2px 8px;
+    }
+
+    /* ── Printer detail form ──────────────────────────────────── */
+    .printer-detail {
+      display: none; background: #f7f8fa;
+      border: 1.5px solid #e2e8f0; border-radius: 8px;
+      padding: 16px; margin-top: 6px; margin-bottom: 8px;
+    }
+    .printer-detail.open { display: block; }
+    .page-size-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+    .page-size-row input {
+      width: 80px; padding: 6px 10px; border: 1.5px solid #cbd5e0;
+      border-radius: 6px; font-size: .92rem; background: #fff;
+    }
+    .page-size-row input:focus { outline: none; border-color: #2b6cb0; }
+    .page-size-row span { font-size: .82rem; color: #718096; }
+
     /* ── Check preview (screen only) ───────────────────────── */
     .check-preview { max-width: 680px; margin: 0 auto 24px; }
     .check-preview h2 {
@@ -273,16 +342,8 @@
     .check-sig { border-bottom: 1px solid #555; min-width: 160px; text-align: center; padding-top: 18px; color: #555; }
 
     /* ── Print ──────────────────────────────────────────────── */
-    /*
-      Paper  : Letter 8.5in × 11in (portrait)
-      Check  : 8in × 3in, placed at LOWER-RIGHT corner of letter paper
-      Offset : top = 11 - 3 = 8in, left = 8.5 - 8 = 0.5in
-      Field positions in settings are measured from upper-left of the CHECK;
-      JS adds the offset so they land correctly on the letter page.
-    */
     @media print {
-      @page { size: 8.5in 11in; margin: 0; }
-      html, body { width: 8.5in; height: 11in; margin: 0; padding: 0; background: transparent; overflow: hidden; }
+      html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
       body > * { display: none !important; }
       #print-overlay { display: block !important; }
     }
@@ -294,14 +355,13 @@
         display: block !important;
         position: fixed;
         top: 0; left: 0;
-        width: 8.5in; height: 11in;
         font-family: Arial, Helvetica, sans-serif;
         color: #000;
         background: transparent;
+        /* width/height/page size injected by #dynamic-page-style per printer */
       }
       #po-date, #po-payto, #po-amount, #po-words {
         position: absolute;
-        /* top / left set via inline style from JS — already includes the 8in/0.5in letter offset */
       }
       #po-payto, #po-amount { font-weight: bold; }
       #po-words { font-weight: bold; }
@@ -315,11 +375,18 @@
 <!-- ── Tabs ── -->
 <div class="tabs no-print">
   <button class="tab-btn active" onclick="switchTab('print')">Print Check</button>
-  <button class="tab-btn" onclick="switchTab('settings')">Field Positions</button>
+  <button class="tab-btn" onclick="switchTab('payees')">Payees</button>
+  <button class="tab-btn" onclick="switchTab('printers')">Printers</button>
+  <button class="tab-btn" onclick="switchTab('backup')">Backup</button>
 </div>
 
 <!-- ── Print Tab ── -->
 <div id="tab-print" class="tab-panel active">
+  <div id="printer-notes-banner" class="printer-notes-banner no-print"></div>
+  <div class="printer-bar no-print">
+    <span class="printer-bar-label">🖨 Printer:</span>
+    <select id="printer-select-bar" onchange="setActivePrinter(this.value)"></select>
+  </div>
   <div class="card no-print">
 
     <div class="field">
@@ -336,10 +403,10 @@
     <div class="field">
       <label>Pay To the Order Of</label>
       <div class="combo-wrap">
-        <input type="text" id="inp-payto" placeholder="Enter payee name…" autocomplete="off" />
+        <input type="text" id="inp-payto" placeholder="Search payee…" autocomplete="off" />
         <div class="dropdown" id="payto-dropdown"></div>
       </div>
-      <p class="hint">Type a name and press Enter to save it for future use.</p>
+      <p class="hint">Search and select from your saved payees. Manage them in the Payees tab.</p>
     </div>
 
     <div class="field">
@@ -362,123 +429,60 @@
   </div>
 </div>
 
-<!-- ── Settings Tab ── -->
-<div id="tab-settings" class="tab-panel">
+<!-- ── Payees Tab ── -->
+<div id="tab-payees" class="tab-panel">
   <div class="card no-print">
-    <p class="hint" style="margin-bottom:16px;">
-      Set each field's distance from the <strong>upper-left corner</strong> of the check (in inches).
-      Print on plain paper first, hold it over the check against a light to calibrate.
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <input type="text" id="new-payee-input" placeholder="Enter payee name…" style="flex:1;" />
+      <button class="btn btn-primary" onclick="addPayeeFromTab()">Add</button>
+    </div>
+    <div id="payees-list"></div>
+    <p id="payees-empty" class="hint" style="text-align:center;padding:24px 0;">No payees saved yet. Add one above.</p>
+  </div>
+</div>
+
+<!-- ── Printers Tab ── -->
+<div id="tab-printers" class="tab-panel">
+  <div class="card no-print">
+    <div class="settings-section-title" style="margin-top:0;">Add Printer</div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <input type="text" id="new-printer-input" placeholder="Enter printer name…" style="flex:1;" />
+      <button class="btn btn-primary" onclick="addPrinterFromTab()">Add</button>
+    </div>
+
+    <div class="settings-section-title">Saved Printers</div>
+    <div id="printers-list"></div>
+    <p id="printers-empty" class="hint" style="text-align:center;padding:16px 0;display:none;">No printers saved.</p>
+
+    <p class="hint" style="margin-top:20px;">
+      Each printer stores its own <strong>page size, offset, notes, and field positions</strong>.
+      Click <strong>Details</strong> to configure. Notes appear as a reminder on the Print Check tab before printing.
     </p>
+  </div>
+</div>
 
-    <!-- Date -->
-    <div class="settings-section-title">Date</div>
-    <div class="pos-grid">
-      <div class="pos-field">
-        <label>From top</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-date-top" step="0.01" min="0" max="3" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
-      <div class="pos-field">
-        <label>From left</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-date-left" step="0.01" min="0" max="8" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
-    </div>
-    <div class="font-size-row">
-      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
-      <div class="input-unit-wrap">
-        <input type="number" id="s-date-size" step="0.5" min="6" max="24" />
-        <span class="unit-label">pt</span>
-      </div>
+<!-- ── Backup Tab ── -->
+<div id="tab-backup" class="tab-panel">
+  <div class="card no-print">
+    <div class="settings-section-title" style="margin-top:0;">Export Settings</div>
+    <p class="hint" style="margin-bottom:14px;">
+      Downloads a <code>.json</code> file with your printer profiles and payee list.
+      Save it somewhere safe — import it on any browser or device.
+    </p>
+    <div class="btn-row" style="justify-content:flex-start;">
+      <button class="btn btn-primary" onclick="exportBackup()">⬇ Export Backup</button>
     </div>
 
-    <!-- Pay To -->
-    <div class="settings-section-title">Pay To</div>
-    <div class="pos-grid">
-      <div class="pos-field">
-        <label>From top</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-payto-top" step="0.01" min="0" max="3" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
-      <div class="pos-field">
-        <label>From left</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-payto-left" step="0.01" min="0" max="8" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
+    <div class="settings-section-title">Import Settings</div>
+    <p class="hint" style="margin-bottom:14px;">
+      Load a previously exported backup. <strong>This overwrites your current profiles and payee list.</strong>
+    </p>
+    <div class="btn-row" style="justify-content:flex-start;gap:10px;">
+      <button class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">⬆ Choose Backup File</button>
+      <span id="import-filename" class="hint" style="align-self:center;"></span>
     </div>
-    <div class="font-size-row">
-      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
-      <div class="input-unit-wrap">
-        <input type="number" id="s-payto-size" step="0.5" min="6" max="24" />
-        <span class="unit-label">pt</span>
-      </div>
-    </div>
-
-    <!-- Amount (numeric) -->
-    <div class="settings-section-title">Amount (₱ numeric)</div>
-    <div class="pos-grid">
-      <div class="pos-field">
-        <label>From top</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-amount-top" step="0.01" min="0" max="3" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
-      <div class="pos-field">
-        <label>From left</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-amount-left" step="0.01" min="0" max="8" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
-    </div>
-    <div class="font-size-row">
-      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
-      <div class="input-unit-wrap">
-        <input type="number" id="s-amount-size" step="0.5" min="6" max="24" />
-        <span class="unit-label">pt</span>
-      </div>
-    </div>
-
-    <!-- Amount in words -->
-    <div class="settings-section-title">Amount in Words</div>
-    <div class="pos-grid">
-      <div class="pos-field">
-        <label>From top</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-words-top" step="0.01" min="0" max="3" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
-      <div class="pos-field">
-        <label>From left</label>
-        <div class="input-unit-wrap">
-          <input type="number" id="s-words-left" step="0.01" min="0" max="8" />
-          <span class="unit-label">in</span>
-        </div>
-      </div>
-    </div>
-    <div class="font-size-row">
-      <label style="margin:0;text-transform:none;letter-spacing:0;font-size:.82rem;color:#4a5568;">Font size</label>
-      <div class="input-unit-wrap">
-        <input type="number" id="s-words-size" step="0.5" min="6" max="24" />
-        <span class="unit-label">pt</span>
-      </div>
-    </div>
-
-    <div class="btn-row" style="margin-top:24px;">
-      <button class="btn btn-danger" onclick="resetSettings()">Reset to Defaults</button>
-      <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-    </div>
-    <p class="hint" id="settings-saved-msg" style="text-align:right;color:#2f855a;display:none;margin-top:8px;">Settings saved.</p>
+    <input type="file" id="import-file-input" accept=".json" style="display:none;" onchange="importBackup(this)" />
+    <p id="import-status" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:.88rem;font-weight:600;"></p>
   </div>
 </div>
 
@@ -526,72 +530,77 @@
 </div>
 
 <script>
-// ── Letter paper offset ───────────────────────────────────────
-// Check (8×3in) sits at the lower-right of letter paper (8.5×11in).
-// All field positions in settings are relative to the CHECK's upper-left.
-// We add these offsets when printing so text lands on the correct spot.
-const LETTER_TOP  = 8.0;   // 11 - 3
-const LETTER_LEFT = 0.5;   // 8.5 - 8
+// ── Storage keys ──────────────────────────────────────────────
+const PAYEE_KEY    = 'ph_check_payees';
+const PROFILES_KEY = 'ph_printer_profiles';
+const ACTIVE_KEY   = 'ph_active_printer';
 
 // ── Default field positions (inches from upper-left of CHECK) ─
+// offsetTop/offsetLeft: distance from page edge to upper-left of check.
+// Set to 0/0 for direct check-sized paper printing.
 const DEFAULTS = {
-  date:   { top: 0.42, left: 5.80, size: 10 },
-  payto:  { top: 0.88, left: 1.85, size: 11 },
-  amount: { top: 0.82, left: 6.40, size: 11 },
-  words:  { top: 1.30, left: 0.35, size: 10 },
+  date:       { top: 0.42, left: 5.80, size: 10 },
+  payto:      { top: 0.88, left: 1.85, size: 11 },
+  amount:     { top: 0.82, left: 6.40, size: 11 },
+  words:      { top: 1.30, left: 0.35, size: 10 },
+  pageWidth:  8.5,
+  pageHeight: 11,
+  offsetTop:  8.0,
+  offsetLeft: 0.5,
+  notes: '',
 };
 
-const SETTINGS_KEY = 'ph_check_positions';
+const BUILTIN_PRINTERS = ['Basic Printer Profile', 'HP Smart Tank 520'];
+
+// ── Printer profiles ──────────────────────────────────────────
+function getProfiles() {
+  try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {}; } catch { return {}; }
+}
+function saveProfiles(p) { localStorage.setItem(PROFILES_KEY, JSON.stringify(p)); }
+
+function getActivePrinterName() {
+  return localStorage.getItem(ACTIVE_KEY) || 'Basic Printer Profile';
+}
+
+function setActivePrinter(name) {
+  localStorage.setItem(ACTIVE_KEY, name);
+  refreshPrinterSelectors();
+  const s = loadSettings();
+  applyPositions(s);
+  applyPageSize(s);
+  renderPrintersBanner(s);
+  renderPrintersList();
+}
+
+function getPrinterList() {
+  const profiles = getProfiles();
+  const custom = Object.keys(profiles).filter(k => !BUILTIN_PRINTERS.includes(k));
+  return [...BUILTIN_PRINTERS, ...custom];
+}
+
+function refreshPrinterSelectors() {
+  const active = getActivePrinterName();
+  const list   = getPrinterList();
+  const sel = document.getElementById('printer-select-bar');
+  if (sel) sel.innerHTML = list.map(p =>
+    `<option value="${p}" ${p === active ? 'selected' : ''}>${p}</option>`
+  ).join('');
+}
 
 function loadSettings() {
-  try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(SETTINGS_KEY))); }
+  const profiles = getProfiles();
+  const name     = getActivePrinterName();
+  try { return Object.assign({}, DEFAULTS, profiles[name]); }
   catch { return Object.assign({}, DEFAULTS); }
 }
 
-function saveSettings() {
-  const s = {
-    date:   { top: +document.getElementById('s-date-top').value,   left: +document.getElementById('s-date-left').value,   size: +document.getElementById('s-date-size').value },
-    payto:  { top: +document.getElementById('s-payto-top').value,  left: +document.getElementById('s-payto-left').value,  size: +document.getElementById('s-payto-size').value },
-    amount: { top: +document.getElementById('s-amount-top').value, left: +document.getElementById('s-amount-left').value, size: +document.getElementById('s-amount-size').value },
-    words:  { top: +document.getElementById('s-words-top').value,  left: +document.getElementById('s-words-left').value,  size: +document.getElementById('s-words-size').value },
-  };
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
-  applyPositions(s);
-  const msg = document.getElementById('settings-saved-msg');
-  msg.style.display = 'block';
-  setTimeout(() => msg.style.display = 'none', 2000);
-}
-
-function resetSettings() {
-  localStorage.removeItem(SETTINGS_KEY);
-  populateSettingsForm(DEFAULTS);
-  applyPositions(DEFAULTS);
-  const msg = document.getElementById('settings-saved-msg');
-  msg.textContent = 'Reset to defaults.';
-  msg.style.display = 'block';
-  setTimeout(() => { msg.style.display = 'none'; msg.textContent = 'Settings saved.'; }, 2000);
-}
-
-function populateSettingsForm(s) {
-  document.getElementById('s-date-top').value    = s.date.top;
-  document.getElementById('s-date-left').value   = s.date.left;
-  document.getElementById('s-date-size').value   = s.date.size;
-  document.getElementById('s-payto-top').value   = s.payto.top;
-  document.getElementById('s-payto-left').value  = s.payto.left;
-  document.getElementById('s-payto-size').value  = s.payto.size;
-  document.getElementById('s-amount-top').value  = s.amount.top;
-  document.getElementById('s-amount-left').value = s.amount.left;
-  document.getElementById('s-amount-size').value = s.amount.size;
-  document.getElementById('s-words-top').value   = s.words.top;
-  document.getElementById('s-words-left').value  = s.words.left;
-  document.getElementById('s-words-size').value  = s.words.size;
-}
-
 function applyPositions(s) {
+  const oTop  = s.offsetTop  !== undefined ? s.offsetTop  : DEFAULTS.offsetTop;
+  const oLeft = s.offsetLeft !== undefined ? s.offsetLeft : DEFAULTS.offsetLeft;
   const set = (id, field) => {
     const el = document.getElementById(id);
-    el.style.top      = (s[field].top  + LETTER_TOP)  + 'in';
-    el.style.left     = (s[field].left + LETTER_LEFT) + 'in';
+    el.style.top      = (s[field].top  + oTop)  + 'in';
+    el.style.left     = (s[field].left + oLeft) + 'in';
     el.style.fontSize = s[field].size + 'pt';
   };
   set('po-date',   'date');
@@ -600,31 +609,292 @@ function applyPositions(s) {
   set('po-words',  'words');
 }
 
+function applyPageSize(s) {
+  const w = s.pageWidth  || 8.5;
+  const h = s.pageHeight || 11;
+  document.getElementById('dynamic-page-style').textContent = `
+    @media print {
+      @page { size: ${w}in ${h}in; margin: 0; }
+      html, body { width: ${w}in; height: ${h}in; }
+      #print-overlay { width: ${w}in; height: ${h}in; }
+    }`;
+}
+
+function renderPrintersBanner(s) {
+  const banner = document.getElementById('printer-notes-banner');
+  const notes  = (s.notes || '').trim();
+  if (notes) {
+    banner.style.display = 'block';
+    banner.innerHTML = `<strong>🖨 ${getActivePrinterName()} — Setup Notes</strong>${notes.replace(/\n/g, '<br>')}`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ── Seed built-in printer profiles ───────────────────────────
+(function seedPrinters() {
+  const profiles = getProfiles();
+  if (!profiles['Basic Printer Profile']) {
+    profiles['Basic Printer Profile'] = Object.assign({}, DEFAULTS, {
+      pageWidth: 8, pageHeight: 3, offsetTop: 0, offsetLeft: 0, notes: '',
+    });
+  }
+  if (!profiles['HP Smart Tank 520']) {
+    profiles['HP Smart Tank 520'] = Object.assign({}, DEFAULTS, {
+      pageWidth: 8.5, pageHeight: 11, offsetTop: 8.0, offsetLeft: 0.5,
+      notes: 'Print on Letter paper (8.5 × 11 in). Place the check form at the lower-right corner of the page.\nIn the print dialog: set Paper Size to Letter, Scale to 100%, and turn off headers/footers.\nField positions are measured from the upper-left of the CHECK — the page offset is applied automatically.',
+    });
+  }
+  saveProfiles(profiles);
+})();
+
+// ── Printers tab ──────────────────────────────────────────────
+function posRow(label, prefix, i, prof) {
+  return `
+    <div class="settings-section-title" style="margin-top:14px;">${label}</div>
+    <div class="pos-grid">
+      <div class="pos-field">
+        <label>From top</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="${prefix}-top-${i}" value="${prof.top}" step="0.01" min="0" max="3" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+      <div class="pos-field">
+        <label>From left</label>
+        <div class="input-unit-wrap">
+          <input type="number" id="${prefix}-left-${i}" value="${prof.left}" step="0.01" min="0" max="8" />
+          <span class="unit-label">in</span>
+        </div>
+      </div>
+    </div>
+    <div class="font-size-row">
+      <label style="margin:0;font-size:.82rem;color:#4a5568;">Font size</label>
+      <div class="input-unit-wrap" style="width:120px;">
+        <input type="number" id="${prefix}-size-${i}" value="${prof.size}" step="0.5" min="6" max="24" />
+        <span class="unit-label">pt</span>
+      </div>
+    </div>`;
+}
+
+function renderPrintersList() {
+  const list      = getPrinterList();
+  const active    = getActivePrinterName();
+  const profiles  = getProfiles();
+  const container = document.getElementById('printers-list');
+  const empty     = document.getElementById('printers-empty');
+  empty.style.display = 'none';
+  container.innerHTML = list.map((p, i) => {
+    const prof = Object.assign({}, DEFAULTS, profiles[p] || {});
+    const enc  = encodeURIComponent(p);
+    return `
+    <div style="margin-bottom:4px;">
+      <div class="printer-row">
+        <span class="printer-name">${p}</span>
+        ${p === active ? '<span class="active-badge">✓ Active</span>' : `<button class="icon-btn edit" onclick="setActivePrinter('${p}')">Set Active</button>`}
+        <button class="icon-btn edit" onclick="togglePrinterDetail(${i})">Details</button>
+        ${BUILTIN_PRINTERS.includes(p) ? '' : `<button class="icon-btn del" onclick="deletePrinter('${enc}')">Delete</button>`}
+      </div>
+      <div class="printer-detail" id="printer-detail-${i}">
+        <div class="settings-section-title" style="margin-top:0;">Page Size</div>
+        <div class="page-size-row">
+          <span>Width:</span>
+          <input type="number" id="pd-w-${i}" value="${prof.pageWidth}" step="0.25" min="1" max="20" />
+          <span>× Height:</span>
+          <input type="number" id="pd-h-${i}" value="${prof.pageHeight}" step="0.25" min="1" max="20" />
+          <span>inches</span>
+        </div>
+
+        <div class="settings-section-title">Check Offset on Page</div>
+        <p class="hint" style="margin-bottom:8px;">Distance from the page edge to the upper-left corner of the check. Use 0 / 0 when printing directly on check-sized paper.</p>
+        <div class="page-size-row">
+          <span>From top:</span>
+          <input type="number" id="pd-ot-${i}" value="${prof.offsetTop || 0}" step="0.25" min="0" max="20" />
+          <span>From left:</span>
+          <input type="number" id="pd-ol-${i}" value="${prof.offsetLeft || 0}" step="0.25" min="0" max="20" />
+          <span>inches</span>
+        </div>
+
+        <div class="settings-section-title">Setup Notes</div>
+        <textarea id="pd-notes-${i}" placeholder="e.g. Load paper face-up in rear tray…" style="width:100%;padding:8px 10px;border:1.5px solid #cbd5e0;border-radius:6px;font-size:.88rem;resize:vertical;min-height:64px;font-family:inherit;background:#fff;margin-bottom:4px;">${prof.notes || ''}</textarea>
+
+        <div class="settings-section-title">Field Positions</div>
+        <p class="hint" style="margin-bottom:8px;">Distance from the upper-left corner of the check. Print on plain paper first, hold it over the check against a light to calibrate.</p>
+        ${posRow('Date',             'pd-date',   i, prof.date)}
+        ${posRow('Pay To',           'pd-payto',  i, prof.payto)}
+        ${posRow('Amount (numeric)', 'pd-amount', i, prof.amount)}
+        ${posRow('Amount in Words',  'pd-words',  i, prof.words)}
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn btn-danger"  onclick="resetPrinterDetail(${i},'${enc}')">Reset to Defaults</button>
+          <button class="btn btn-primary" id="pd-save-btn-${i}" onclick="savePrinterDetail(${i},'${enc}')">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePrinterDetail(i) {
+  document.getElementById(`printer-detail-${i}`).classList.toggle('open');
+}
+
+function savePrinterDetail(i, enc) {
+  const name     = decodeURIComponent(enc);
+  const profiles = getProfiles();
+  const saved = {
+    pageWidth:  parseFloat(document.getElementById(`pd-w-${i}`).value)   || 8.5,
+    pageHeight: parseFloat(document.getElementById(`pd-h-${i}`).value)   || 11,
+    offsetTop:  parseFloat(document.getElementById(`pd-ot-${i}`).value)  || 0,
+    offsetLeft: parseFloat(document.getElementById(`pd-ol-${i}`).value)  || 0,
+    notes:      document.getElementById(`pd-notes-${i}`).value,
+    date:   { top: +document.getElementById(`pd-date-top-${i}`).value,   left: +document.getElementById(`pd-date-left-${i}`).value,   size: +document.getElementById(`pd-date-size-${i}`).value },
+    payto:  { top: +document.getElementById(`pd-payto-top-${i}`).value,  left: +document.getElementById(`pd-payto-left-${i}`).value,  size: +document.getElementById(`pd-payto-size-${i}`).value },
+    amount: { top: +document.getElementById(`pd-amount-top-${i}`).value, left: +document.getElementById(`pd-amount-left-${i}`).value, size: +document.getElementById(`pd-amount-size-${i}`).value },
+    words:  { top: +document.getElementById(`pd-words-top-${i}`).value,  left: +document.getElementById(`pd-words-left-${i}`).value,  size: +document.getElementById(`pd-words-size-${i}`).value },
+  };
+  profiles[name] = saved;
+  saveProfiles(profiles);
+  if (name === getActivePrinterName()) {
+    applyPositions(saved);
+    applyPageSize(saved);
+    renderPrintersBanner(saved);
+  }
+  const btn = document.getElementById(`pd-save-btn-${i}`);
+  btn.textContent = 'Saved ✓';
+  setTimeout(() => btn.textContent = 'Save', 1500);
+}
+
+function resetPrinterDetail(i, enc) {
+  const name     = decodeURIComponent(enc);
+  const profiles = getProfiles();
+  const existingNotes = profiles[name] ? profiles[name].notes || '' : '';
+  profiles[name] = Object.assign({}, DEFAULTS, { notes: existingNotes });
+  saveProfiles(profiles);
+  if (name === getActivePrinterName()) { applyPositions(DEFAULTS); applyPageSize(DEFAULTS); }
+  renderPrintersList();
+  setTimeout(() => { document.getElementById(`printer-detail-${i}`) && togglePrinterDetail(i); }, 0);
+}
+
+function addPrinterFromTab() {
+  const input = document.getElementById('new-printer-input');
+  const name  = input.value.trim();
+  if (!name) return;
+  const profiles = getProfiles();
+  if (!profiles[name]) { profiles[name] = Object.assign({}, DEFAULTS); saveProfiles(profiles); }
+  input.value = '';
+  setActivePrinter(name);
+}
+
+function deletePrinter(enc) {
+  const name = decodeURIComponent(enc);
+  const profiles = getProfiles();
+  delete profiles[name];
+  saveProfiles(profiles);
+  if (getActivePrinterName() === name) setActivePrinter(BUILTIN_PRINTERS[0]);
+  else { refreshPrinterSelectors(); renderPrintersList(); }
+}
+
+document.getElementById('new-printer-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { addPrinterFromTab(); e.preventDefault(); }
+});
+
 // ── Tab switching ─────────────────────────────────────────────
 function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   document.querySelector(`.tab-btn[onclick="switchTab('${name}')"]`).classList.add('active');
+  if (name === 'payees')   renderPayeesList();
+  if (name === 'printers') renderPrintersList();
+  if (name === 'backup')   { document.getElementById('import-status').style.display='none'; document.getElementById('import-filename').textContent=''; }
 }
 
 // ── Payee storage ─────────────────────────────────────────────
-const PAYEE_KEY = 'ph_check_payees';
 function getPayees() {
   try { return JSON.parse(localStorage.getItem(PAYEE_KEY)) || []; } catch { return []; }
 }
-function savePayee(name) {
-  const list = getPayees();
-  const clean = name.trim().toUpperCase();
-  if (!clean || list.includes(clean)) return;
-  list.unshift(clean);
-  localStorage.setItem(PAYEE_KEY, JSON.stringify(list.slice(0, 100)));
-}
-function deletePayee(name) {
-  localStorage.setItem(PAYEE_KEY, JSON.stringify(getPayees().filter(p => p !== name)));
-}
+function persistPayees(list) { localStorage.setItem(PAYEE_KEY, JSON.stringify(list)); }
 
-// ── Payee dropdown ────────────────────────────────────────────
+// ── Payees tab ────────────────────────────────────────────────
+function renderPayeesList() {
+  const list      = getPayees();
+  const container = document.getElementById('payees-list');
+  const empty     = document.getElementById('payees-empty');
+  if (!list.length) { container.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  container.innerHTML = list.map((p, i) => `
+    <div class="payee-row" id="prow-${i}">
+      <span class="payee-name" id="pname-${i}">${p}</span>
+      <button class="icon-btn edit" onclick="startEditPayee(${i})">Edit</button>
+      <button class="icon-btn del"  onclick="deletePayeeAt(${i})">Delete</button>
+    </div>`).join('');
+}
+function startEditPayee(i) {
+  const list = getPayees();
+  const row  = document.getElementById(`prow-${i}`);
+  row.innerHTML = `
+    <input class="payee-edit-input" id="pedit-${i}" value="${list[i]}" />
+    <button class="icon-btn save"   onclick="saveEditPayee(${i})">Save</button>
+    <button class="icon-btn cancel" onclick="renderPayeesList()">Cancel</button>`;
+  document.getElementById(`pedit-${i}`).focus();
+}
+function saveEditPayee(i) {
+  const val = document.getElementById(`pedit-${i}`).value.trim().toUpperCase();
+  if (!val) return;
+  const list = getPayees(); list[i] = val; persistPayees(list); renderPayeesList();
+}
+function deletePayeeAt(i) {
+  const list = getPayees(); list.splice(i, 1); persistPayees(list); renderPayeesList();
+}
+function addPayeeFromTab() {
+  const input = document.getElementById('new-payee-input');
+  const val   = input.value.trim().toUpperCase();
+  if (!val) return;
+  const list = getPayees();
+  if (!list.includes(val)) { list.unshift(val); persistPayees(list); }
+  input.value = '';
+  renderPayeesList();
+}
+document.getElementById('new-payee-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { addPayeeFromTab(); e.preventDefault(); }
+});
+
+// ── Seed payees (only if list is empty) ──────────────────────
+(function seedPayees() {
+  if (getPayees().length) return;
+  persistPayees([
+    '1PLS COMPANY INC.','AMAIA LAND CORP.','AMLEY FOOD CORP.','AMLEY FOOD CORPORATION',
+    'APRIL GRACE T. DY','ARLENE LAMADRID','ASIAN TERMINALS INC.',
+    'BEN LINE AGENCIES PHILIPPINES, INC.','BOLLORE LOGISTICS PHILS. INC.',
+    'CARGO DATA EXCHANGE CENTER INC.','CARMEN KU','CAROL YU','CHERWIN GABUTIN',
+    'COSCO SHIPPING LINES (PHILIPPINES), INC','DSV AIR AND SEA, INC',
+    'EM PAINTING SERVICES','FAMOUS PACIFIC FORWARDING PHILS. INC.',
+    'FINE QUALI GAS CORP.','FIRST PRIORITY LOGISTICS SOLUTIONS INC',
+    'GOLDEN ARROW TRUCKING SERVICES','GPFRESH COMPANY INC.',
+    'GREENFIELD AUTO SUPPLY CO INC','HIGHSPEED SECURITY AGENCY',
+    'HSBC FAO MAERSK FILIPINAS INC.',
+    'HSBC FAO OCEAN NETWORK EXPRESS PHILIPPINES INC-LINER',
+    'HYUNDAI MERCHANT MARINE (PHILIPPINES) CO., INC.',
+    'INTERCOMMERCE NETWORK SERVICES INC.','J3AMP MARKETING',
+    'JEROME FEROLINO','JERRY TEH','JOAN SIN & HOWELL HAY',
+    'JOHN GOLD CARGO FORWARDER CORP.','JOMARK HUELVA ATIM',
+    'KMTC (PHILIPPINES) CORPORATION','LETICIA T ROSANES',
+    'MADISON SQUARE CONDOMINIUM INC.','MAGDALENA CALAYO',
+    'MANILA WATER COMPANY, INC.','MARCELO MULIARI',
+    'MAYNILAD WATER SERVICES INC','MERALCO','METROBANK CREDIT CARD',
+    'MICHELLE MALABRIGO','NATHAN D DE VILLA','NIDA DIEZ','NOVUS FREIGHT INC.',
+    'NR LAZARO MACHINE SHOP','OCEAN LINK CONTAINER TERMINALS CENTER INC.',
+    'PALM TREE VILLAS CONDOMINIUM ASSOCIATION INC.',
+    'PERLA COMPANIA DE SEGUROS INC','PHIL. PACKING MANAGEMENT SERVICE CORP.',
+    'PNB CREDIT CARDS','POWERHEART TRUCKING INC.','PRU LIFE UK',
+    'REALEDGE CARGO TRANSPORT','RODA RAMALLOSA','ROGELIO DAMOLE',
+    'ROSEMEADOWS FARM INC.','SARAH MAE LIAO','SEAGLORY SHIPPING SERVICES INC',
+    'ST. NICOLAS FRUITS AND VEGETABLES TRADING','WYCHWOOD FOOD CORPORATION',
+    'YESHA SHAYEN VEGETABLE TRADING',
+  ]);
+})();
+
+// ── Payee search dropdown (Print Check tab) ───────────────────
 const paytoInput = document.getElementById('inp-payto');
 const dropdown   = document.getElementById('payto-dropdown');
 
@@ -633,13 +903,10 @@ function renderDropdown(filter) {
   const matches = q ? getPayees().filter(p => p.includes(q)) : getPayees();
   if (!matches.length) { dropdown.classList.remove('open'); return; }
   dropdown.innerHTML = matches.map(p => `
-    <div class="dropdown-item" data-name="${encodeURIComponent(p)}">
-      <span>${p}</span>
-      <button class="del-btn" title="Remove" onclick="removePayee(event,'${encodeURIComponent(p)}')">✕</button>
-    </div>`).join('');
+    <div class="dropdown-item" data-name="${encodeURIComponent(p)}"><span>${p}</span></div>
+  `).join('');
   dropdown.querySelectorAll('.dropdown-item').forEach(el => {
     el.addEventListener('mousedown', e => {
-      if (e.target.classList.contains('del-btn')) return;
       paytoInput.value = decodeURIComponent(el.dataset.name);
       updatePreview();
       dropdown.classList.remove('open');
@@ -647,24 +914,10 @@ function renderDropdown(filter) {
   });
   dropdown.classList.add('open');
 }
-function removePayee(e, encoded) {
-  e.preventDefault(); e.stopPropagation();
-  deletePayee(decodeURIComponent(encoded));
-  renderDropdown(paytoInput.value);
-}
 paytoInput.addEventListener('input',  () => { renderDropdown(paytoInput.value); updatePreview(); });
 paytoInput.addEventListener('focus',  () => renderDropdown(paytoInput.value));
 paytoInput.addEventListener('blur',   () => setTimeout(() => dropdown.classList.remove('open'), 150));
-paytoInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    savePayee(paytoInput.value);
-    paytoInput.value = paytoInput.value.trim().toUpperCase();
-    dropdown.classList.remove('open');
-    updatePreview();
-    e.preventDefault();
-  }
-  if (e.key === 'Escape') dropdown.classList.remove('open');
-});
+paytoInput.addEventListener('keydown', e => { if (e.key === 'Escape') dropdown.classList.remove('open'); });
 
 // ── Amount → Words (BSP) ──────────────────────────────────────
 const ONES  = ['','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE',
@@ -722,8 +975,8 @@ function updatePreview() {
   const amount = parseFloat(raw);
   const hasAmt = raw !== '' && !isNaN(amount) && amount >= 0;
 
-  document.getElementById('preview-date').textContent  = formatDate();
-  document.getElementById('preview-payto').textContent = payto;
+  document.getElementById('preview-date').textContent   = formatDate();
+  document.getElementById('preview-payto').textContent  = payto;
   document.getElementById('preview-amount').textContent = hasAmt ? formatAmount(amount) : '₱';
 
   const wordsEl    = document.getElementById('words-display');
@@ -732,21 +985,16 @@ function updatePreview() {
   if (hasAmt) {
     const words = amountToWords(amount);
     if (words) {
-      wordsEl.textContent = words;
-      wordsEl.classList.remove('empty');
-      previewWEl.textContent = words;
+      wordsEl.textContent = words; wordsEl.classList.remove('empty'); previewWEl.textContent = words;
     } else {
       wordsEl.textContent = 'Enter an amount above to generate the written form.';
-      wordsEl.classList.add('empty');
-      previewWEl.textContent = '';
+      wordsEl.classList.add('empty'); previewWEl.textContent = '';
     }
   } else {
     wordsEl.textContent = 'Enter an amount above to generate the written form.';
-    wordsEl.classList.add('empty');
-    previewWEl.textContent = '';
+    wordsEl.classList.add('empty'); previewWEl.textContent = '';
   }
 
-  // Sync print overlay text
   document.getElementById('po-date').textContent   = document.getElementById('preview-date').textContent;
   document.getElementById('po-payto').textContent  = document.getElementById('preview-payto').textContent;
   document.getElementById('po-amount').textContent = document.getElementById('preview-amount').textContent;
@@ -762,10 +1010,52 @@ function clearForm() {
   updatePreview();
 }
 
+// ── Backup: Export ────────────────────────────────────────────
+function exportBackup() {
+  const data = {
+    version: 1, exported: new Date().toISOString(),
+    profiles: getProfiles(), payees: getPayees(),
+    activePrinter: getActivePrinterName(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `ph-check-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── Backup: Import ────────────────────────────────────────────
+function importBackup(input) {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById('import-filename').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const status = document.getElementById('import-status');
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version || !data.profiles || !data.payees) throw new Error('Invalid backup file.');
+      persistPayees(data.payees);
+      saveProfiles(data.profiles);
+      if (data.activePrinter) localStorage.setItem(ACTIVE_KEY, data.activePrinter);
+      refreshPrinterSelectors();
+      const s = loadSettings(); applyPositions(s); applyPageSize(s); renderPrintersBanner(s);
+      status.textContent = `✓ Imported — ${data.payees.length} payees, ${Object.keys(data.profiles).length} printer profiles.`;
+      status.style.cssText = 'display:block;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:.88rem;font-weight:600;background:#f0fff4;color:#276749;border:1.5px solid #9ae6b4;';
+    } catch (err) {
+      status.textContent = '✗ Import failed: ' + err.message;
+      status.style.cssText = 'display:block;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:.88rem;font-weight:600;background:#fff5f5;color:#c53030;border:1.5px solid #feb2b2;';
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
 // ── Init ──────────────────────────────────────────────────────
+refreshPrinterSelectors();
 const settings = loadSettings();
-populateSettingsForm(settings);
 applyPositions(settings);
+applyPageSize(settings);
+renderPrintersBanner(settings);
 
 document.getElementById('inp-mm').addEventListener('input', function() {
   if (this.value.length >= 2) document.getElementById('inp-dd').focus();
