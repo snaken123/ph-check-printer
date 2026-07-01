@@ -830,7 +830,9 @@ function togglePrinterDetail(i) {
 function savePrinterDetail(i, enc) {
   const name     = decodeURIComponent(enc);
   const profiles = getProfiles();
-  const saved = {
+  // Preserve fields not exposed in the UI (e.g. printRotation) by merging with existing profile.
+  const existing = profiles[name] || {};
+  const saved = { ...existing,
     pageWidth:  parseFloat(document.getElementById(`pd-w-${i}`).value)   || 8.5,
     pageHeight: parseFloat(document.getElementById(`pd-h-${i}`).value)   || 11,
     offsetTop:  parseFloat(document.getElementById(`pd-ot-${i}`).value)  || 0,
