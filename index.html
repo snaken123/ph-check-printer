@@ -382,7 +382,7 @@
         transform: translateY(11in) rotate(-90deg);
       }
 
-      #po-date, #po-payto, #po-amount, #po-words {
+      #po-date-mm, #po-date-dd, #po-date-yyyy, #po-payto, #po-amount, #po-words {
         position: absolute;
       }
       #po-payto, #po-amount { font-weight: bold; }
@@ -548,7 +548,9 @@
 <!-- ── Print overlay (text only, no borders) ── -->
 <div id="print-overlay">
   <div id="print-inner">
-    <span id="po-date"></span>
+    <span id="po-date-mm"></span>
+    <span id="po-date-dd"></span>
+    <span id="po-date-yyyy"></span>
     <span id="po-payto"></span>
     <span id="po-amount"></span>
     <span id="po-words"></span>
@@ -633,13 +635,18 @@ function applyPositions(s) {
     overlay.classList.remove('rotate-90');
   }
 
-  const set = (id, field) => {
+  const set = (id, pos) => {
+    const p  = typeof pos === 'string' ? s[pos] : pos;
     const el = document.getElementById(id);
-    el.style.top      = (s[field].top  + oTop)  + 'in';
-    el.style.left     = (s[field].left + oLeft) + 'in';
-    el.style.fontSize = s[field].size + 'pt';
+    el.style.top      = (p.top  + oTop)  + 'in';
+    el.style.left     = (p.left + oLeft) + 'in';
+    el.style.fontSize = p.size + 'pt';
   };
-  set('po-date',   'date');
+  // Date is split into 3 spans; fall back to the legacy `date` field if sub-fields absent.
+  const dateFallback = s.date || { top: 0, left: 0, size: 10 };
+  set('po-date-mm',   s.dateMm   || dateFallback);
+  set('po-date-dd',   s.dateDd   || dateFallback);
+  set('po-date-yyyy', s.dateYyyy || dateFallback);
   set('po-payto',  'payto');
   set('po-amount', 'amount');
   set('po-words',  'words');
@@ -691,7 +698,9 @@ const BUILTIN_SEED_VERSION = 5;
     pageWidth: 8.5, pageHeight: 11,
     offsetTop: 0, offsetLeft: 3.0,
     printRotation: 90,
-    date:   { top: 0.42, left: 5.80, size: 10 },
+    dateMm:   { top: 0.42, left: 5.80, size: 10 },
+    dateDd:   { top: 0.42, left: 6.05, size: 10 },
+    dateYyyy: { top: 0.42, left: 6.28, size: 10 },
     payto:  { top: 0.88, left: 1.85, size: 11 },
     amount: { top: 0.82, left: 6.40, size: 11 },
     words:  { top: 1.30, left: 0.35, size: 10 },
@@ -776,7 +785,9 @@ function renderPrintersList() {
 
         <div class="settings-section-title">Field Positions</div>
         <p class="hint" style="margin-bottom:8px;">Distance from the upper-left corner of the check. Print on plain paper first, hold it over the check against a light to calibrate.</p>
-        ${posRow('Date',             'pd-date',   i, prof.date)}
+        ${posRow('Date — Month (MM)',  'pd-date-mm',   i, prof.dateMm   || prof.date || DEFAULTS.date)}
+        ${posRow('Date — Day (DD)',    'pd-date-dd',   i, prof.dateDd   || prof.date || DEFAULTS.date)}
+        ${posRow('Date — Year (YYYY)', 'pd-date-yyyy', i, prof.dateYyyy || prof.date || DEFAULTS.date)}
         ${posRow('Pay To',           'pd-payto',  i, prof.payto)}
         ${posRow('Amount (numeric)', 'pd-amount', i, prof.amount)}
         ${posRow('Amount in Words',  'pd-words',  i, prof.words)}
@@ -803,7 +814,9 @@ function savePrinterDetail(i, enc) {
     offsetTop:  parseFloat(document.getElementById(`pd-ot-${i}`).value)  || 0,
     offsetLeft: parseFloat(document.getElementById(`pd-ol-${i}`).value)  || 0,
     notes:      document.getElementById(`pd-notes-${i}`).value,
-    date:   { top: +document.getElementById(`pd-date-top-${i}`).value,   left: +document.getElementById(`pd-date-left-${i}`).value,   size: +document.getElementById(`pd-date-size-${i}`).value },
+    dateMm:   { top: +document.getElementById(`pd-date-mm-top-${i}`).value,   left: +document.getElementById(`pd-date-mm-left-${i}`).value,   size: +document.getElementById(`pd-date-mm-size-${i}`).value },
+    dateDd:   { top: +document.getElementById(`pd-date-dd-top-${i}`).value,   left: +document.getElementById(`pd-date-dd-left-${i}`).value,   size: +document.getElementById(`pd-date-dd-size-${i}`).value },
+    dateYyyy: { top: +document.getElementById(`pd-date-yyyy-top-${i}`).value, left: +document.getElementById(`pd-date-yyyy-left-${i}`).value, size: +document.getElementById(`pd-date-yyyy-size-${i}`).value },
     payto:  { top: +document.getElementById(`pd-payto-top-${i}`).value,  left: +document.getElementById(`pd-payto-left-${i}`).value,  size: +document.getElementById(`pd-payto-size-${i}`).value },
     amount: { top: +document.getElementById(`pd-amount-top-${i}`).value, left: +document.getElementById(`pd-amount-left-${i}`).value, size: +document.getElementById(`pd-amount-size-${i}`).value },
     words:  { top: +document.getElementById(`pd-words-top-${i}`).value,  left: +document.getElementById(`pd-words-left-${i}`).value,  size: +document.getElementById(`pd-words-size-${i}`).value },
@@ -1051,7 +1064,10 @@ function updatePreview() {
     wordsEl.classList.add('empty'); previewWEl.textContent = '';
   }
 
-  document.getElementById('po-date').textContent   = document.getElementById('preview-date').textContent;
+  const { mm, dd, yyyy } = getDateParts();
+  document.getElementById('po-date-mm').textContent   = mm   ? String(mm).padStart(2,'0')   : '';
+  document.getElementById('po-date-dd').textContent   = dd   ? String(dd).padStart(2,'0')   : '';
+  document.getElementById('po-date-yyyy').textContent = yyyy ? String(yyyy)                 : '';
   document.getElementById('po-payto').textContent  = document.getElementById('preview-payto').textContent;
   document.getElementById('po-amount').textContent = document.getElementById('preview-amount').textContent;
   document.getElementById('po-words').textContent  = document.getElementById('preview-words').textContent;
