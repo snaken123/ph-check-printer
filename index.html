@@ -696,11 +696,9 @@ const BUILTIN_SEED_VERSION = 5;
     notes: 'Feed the paper BOTTOM-FIRST — check end (right side) goes into the printer first.\nCheck is rotated 90° CW on the right side of the letter paper.\nIn print dialog: Paper Size = Letter, Portrait, Scale = 100%, no headers/footers.',
   };
 
-  const needsUpdate = (name, seed) =>
-    !profiles[name] || (profiles[name]._v || 0) < seed._v;
-
-  if (needsUpdate('Basic Printer Profile', basic)) profiles['Basic Printer Profile'] = basic;
-  if (needsUpdate('HP Smart Tank 520', hp520))     profiles['HP Smart Tank 520']     = hp520;
+  // Always overwrite built-in profiles so changes deploy immediately.
+  profiles['Basic Printer Profile'] = basic;
+  profiles['HP Smart Tank 520']     = hp520;
   saveProfiles(profiles);
 })();
 
