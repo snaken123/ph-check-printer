@@ -397,6 +397,7 @@
         <input type="number" id="inp-dd" placeholder="DD" min="1" max="31" maxlength="2" />
         <span class="date-sep"></span>
         <input type="number" id="inp-yyyy" placeholder="YYYY" min="1900" max="2999" maxlength="4" style="width:90px;" />
+        <button type="button" id="btn-today" title="Set to today" style="border:none;background:transparent;cursor:pointer;padding:8px 10px;color:#2b6cb0;font-size:1.1rem;line-height:1;flex-shrink:0;">&#128197;</button>
       </div>
     </div>
 
@@ -1068,11 +1069,15 @@ document.getElementById('inp-dd').addEventListener('input', function() {
 document.getElementById('inp-yyyy').addEventListener('input', updatePreview);
 document.getElementById('inp-amount').addEventListener('input', updatePreview);
 
-const today = new Date();
-document.getElementById('inp-mm').value   = String(today.getMonth()+1).padStart(2,'0');
-document.getElementById('inp-dd').value   = String(today.getDate()).padStart(2,'0');
-document.getElementById('inp-yyyy').value = today.getFullYear();
-updatePreview();
+function setToday() {
+  const t = new Date();
+  document.getElementById('inp-mm').value   = String(t.getMonth()+1).padStart(2,'0');
+  document.getElementById('inp-dd').value   = String(t.getDate()).padStart(2,'0');
+  document.getElementById('inp-yyyy').value = t.getFullYear();
+  updatePreview();
+}
+document.getElementById('btn-today').addEventListener('click', setToday);
+setToday();
 </script>
 </body>
 </html>
