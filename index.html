@@ -635,7 +635,7 @@ function renderPrintersBanner(s) {
 
 // ── Seed built-in printer profiles ───────────────────────────
 // Bump _v to force-overwrite the stored built-in profiles on all devices.
-const BUILTIN_SEED_VERSION = 2;
+const BUILTIN_SEED_VERSION = 3;
 (function seedPrinters() {
   const profiles = getProfiles();
 
@@ -647,21 +647,19 @@ const BUILTIN_SEED_VERSION = 2;
     amount: { top: 0.82, left: 6.40, size: 11 },
     words:  { top: 1.30, left: 0.35, size: 10 },
   };
-  // HP Smart Tank 520: check is rotated 90° CW and placed on the right side of
-  // portrait letter paper, fed bottom-first. Bottom-first feeding reverses both
-  // CSS axes (top=0 = physical bottom; left=0 = physical right). Given the check
-  // occupies the bottom-right 3×8 area in physical space, CSS coordinates are:
-  //   CSS top  = 8  − original_check_left
-  //   CSS left = 3  − original_check_top
-  // (offsetTop and offsetLeft are 0 because positions encode full CSS coords.)
+  // HP Smart Tank 520: check is in landscape orientation at the physical BOTTOM
+  // of the portrait letter paper. Paper is fed BOTTOM-FIRST so the check enters
+  // the printer first. offsetTop=8.0 places fields in the bottom 3" of the
+  // 11" letter page (CSS top 8–11 in = physical bottom 0–3 in from leading edge).
+  // offsetLeft=0.5 adds a small left margin so the check aligns correctly.
   const hp520 = {
     _v: BUILTIN_SEED_VERSION,
-    pageWidth: 8.5, pageHeight: 11, offsetTop: 0, offsetLeft: 0,
-    date:   { top: 2.20, left: 2.58, size: 10 },
-    payto:  { top: 6.15, left: 2.12, size: 11 },
-    amount: { top: 1.60, left: 2.18, size: 11 },
-    words:  { top: 7.65, left: 1.70, size: 10 },
-    notes: 'Feed the paper BOTTOM-FIRST (check end goes into the printer first).\nCheck is rotated 90° CW — standing vertically on the right side of the letter paper.\nIn print dialog: Paper Size = Letter, Portrait, Scale = 100%, no headers/footers.',
+    pageWidth: 8.5, pageHeight: 11, offsetTop: 8.0, offsetLeft: 0.5,
+    date:   { top: 0.42, left: 5.80, size: 10 },
+    payto:  { top: 0.88, left: 1.85, size: 11 },
+    amount: { top: 0.82, left: 6.40, size: 11 },
+    words:  { top: 1.30, left: 0.35, size: 10 },
+    notes: 'Feed the paper BOTTOM-FIRST — check end goes into the printer first.\nCheck sits in landscape orientation at the bottom of the letter paper.\nIn print dialog: Paper Size = Letter, Portrait, Scale = 100%, no headers/footers.',
   };
 
   const needsUpdate = (name, seed) =>
