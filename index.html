@@ -634,19 +634,41 @@ function renderPrintersBanner(s) {
 }
 
 // ── Seed built-in printer profiles ───────────────────────────
+// Bump _v to force-overwrite the stored built-in profiles on all devices.
+const BUILTIN_SEED_VERSION = 2;
 (function seedPrinters() {
   const profiles = getProfiles();
-  if (!profiles['Basic Printer Profile']) {
-    profiles['Basic Printer Profile'] = Object.assign({}, DEFAULTS, {
-      pageWidth: 8, pageHeight: 3, offsetTop: 0, offsetLeft: 0, notes: '',
-    });
-  }
-  if (!profiles['HP Smart Tank 520']) {
-    profiles['HP Smart Tank 520'] = Object.assign({}, DEFAULTS, {
-      pageWidth: 8.5, pageHeight: 11, offsetTop: 8.0, offsetLeft: 0.5,
-      notes: 'Print on Letter paper (8.5 × 11 in). Place the check form at the lower-right corner of the page.\nIn the print dialog: set Paper Size to Letter, Scale to 100%, and turn off headers/footers.\nField positions are measured from the upper-left of the CHECK — the page offset is applied automatically.',
-    });
-  }
+
+  const basic = {
+    _v: BUILTIN_SEED_VERSION,
+    pageWidth: 8, pageHeight: 3, offsetTop: 0, offsetLeft: 0, notes: '',
+    date:   { top: 0.42, left: 5.80, size: 10 },
+    payto:  { top: 0.88, left: 1.85, size: 11 },
+    amount: { top: 0.82, left: 6.40, size: 11 },
+    words:  { top: 1.30, left: 0.35, size: 10 },
+  };
+  // HP Smart Tank 520: check is rotated 90° CW and placed on the right side of
+  // portrait letter paper, fed bottom-first. Bottom-first feeding reverses both
+  // CSS axes (top=0 = physical bottom; left=0 = physical right). Given the check
+  // occupies the bottom-right 3×8 area in physical space, CSS coordinates are:
+  //   CSS top  = 8  − original_check_left
+  //   CSS left = 3  − original_check_top
+  // (offsetTop and offsetLeft are 0 because positions encode full CSS coords.)
+  const hp520 = {
+    _v: BUILTIN_SEED_VERSION,
+    pageWidth: 8.5, pageHeight: 11, offsetTop: 0, offsetLeft: 0,
+    date:   { top: 2.20, left: 2.58, size: 10 },
+    payto:  { top: 6.15, left: 2.12, size: 11 },
+    amount: { top: 1.60, left: 2.18, size: 11 },
+    words:  { top: 7.65, left: 1.70, size: 10 },
+    notes: 'Feed the paper BOTTOM-FIRST (check end goes into the printer first).\nCheck is rotated 90° CW — standing vertically on the right side of the letter paper.\nIn print dialog: Paper Size = Letter, Portrait, Scale = 100%, no headers/footers.',
+  };
+
+  const needsUpdate = (name, seed) =>
+    !profiles[name] || (profiles[name]._v || 0) < seed._v;
+
+  if (needsUpdate('Basic Printer Profile', basic)) profiles['Basic Printer Profile'] = basic;
+  if (needsUpdate('HP Smart Tank 520', hp520))     profiles['HP Smart Tank 520']     = hp520;
   saveProfiles(profiles);
 })();
 
